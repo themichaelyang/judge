@@ -1,49 +1,49 @@
-// Create server
-let port = process.env.PORT || 8000;
-let express = require('express');
-let app = express();
-let server = require('http').createServer(app).listen(port, function () {
+const port = process.env.PORT || 8000;
+const express = require('express');
+const app = express();
+const server = require('http').createServer(app);
+const io = require('socket.io').listen(server);
+
+let state = '1_WAITING_PLAYERS';
+let players = {};
+
+app.use(express.static('public'));
+server.listen(port, () => { 
   console.log('Server listening at port: ', port);
 });
 
-// Tell server where to look for files
-app.use(express.static('public'));
+const inputs = io.of('/input');
+inputs.on('connection', initInput);
 
-// Create socket connection
-let io = require('socket.io').listen(server);
-
-// Clients in the output namespace
-let outputs = io.of('/output');
-// Listen for output clients to connect
-outputs.on('connection', function(socket) {
-  console.log('An output client connected: ' + socket.id);
-
-  socket.on('disconnect', function() {
-    console.log("An output client has disconnected " + socket.id);
-  });
-});
-
-// Clients in the input namespace
-var inputs = io.of('/input');
-// Listen for input clients to connect
-inputs.on('connection', function(socket){
+function initInput(socket) {
   console.log('An input client connected: ' + socket.id);
+  socket.on('init-player', (message) => {
+    if (state == '1_WAITING_PLAYERS') {
+      console.log(message);
+      players[socket.id] = message.name;
+      socket.emit('update-players', { players: players });
 
-  // Listen for data messages from this client
-  socket.on('data', function(data) {
-
-    let message = {
-      id: socket.id,
-      data : data
+      if (Object.keys(players).length == 3) {
+        // start!!
+      }
     }
-
-    outputs.emit('message', message);
   });
 
-  // Listen for this input client to disconnect
-  // Tell all of the output clients this client disconnected
-  socket.on('disconnect', function() {
-    console.log("An input client has disconnected " + socket.id);
-    outputs.emit('disconnected', socket.id);
+  socket.on('disconnect', () => removePlayer(socket));
+
+  socket.on('to-inputs', (message) => {
+    socket.to('/input').emit('from-server', message);
   });
-});
+  socket.on('to-everyone', (message) => {
+    socket.broadcast.emit('from-server', message);
+  });
+  socket.on('to-everyone', (message) => {
+    socket.to('/output').emit('from-server', message);
+  });
+}
+
+function removePlayer(socket) {
+  if (socket.id in players) {
+    delete players[socket.id];
+  }
+}
