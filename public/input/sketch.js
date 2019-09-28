@@ -1,8 +1,6 @@
 let players = {};
 let adjectives;
 
-const ADD_PLAYER = 'add-player';
-
 function setup() {
   const socket = io('/input');
 
