@@ -44,8 +44,8 @@ function initSocket(socket) {
   });
 }
 
-function draw(){
-  if(adjectives){
+function draw() {
+  if(adjectives) {
     currentword = adjectives[i];
     background(20);
 
@@ -75,10 +75,10 @@ function draw(){
     else {
       rollover = false;
     }
-
+  }
 }
 
-function mousePressed(){
+function mousePressed() {
   if (rollover) {
     dragging = true;
   }
@@ -86,8 +86,6 @@ function mousePressed(){
     offsetX = textX-mouseX;
     offsetY = textY-mouseY;
   }
-}
-
 }
 
 function mouseReleased() {
