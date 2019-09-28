@@ -3,6 +3,8 @@ const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io').listen(server);
+const shuffle = require('./shuffle.js');
+const fs = require('fs');
 
 let state = '1_WAITING_PLAYERS';
 let players = {};
@@ -23,8 +25,13 @@ function initInput(socket) {
       players[socket.id] = message.name;
       socket.emit('update-players', { players: players });
 
+      // start the game at 3 players
       if (Object.keys(players).length == 3) {
-        // start!!
+        state = '2_PLAYING';
+        console.log("PLAYING");
+        const adjectives = fs.readFileSync('adj.txt').toString().split("\n");
+        const socketIds = Object.keys(players);
+        sendAdjectives(shuffle(adjectives), socketIds);
       }
     }
   });
@@ -46,4 +53,17 @@ function removePlayer(socket) {
   if (socket.id in players) {
     delete players[socket.id];
   }
+}
+
+function sendAdjectives(adjectives, socketIds) {
+  const adjsPerSocket = adjectives.length / socketIds.length;
+  let data = {};
+  for (let i = 0; i < socketIds.length; i++) {
+    const offset = i * adjsPerSocket;
+    const id = socketIds[i];
+    const split = adjectives.slice(offset, offset + adjsPerSocket);
+    data[id] = split;
+  }
+
+  inputs.emit('adjectives', {adjectives: data});
 }

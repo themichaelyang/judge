@@ -1,9 +1,5 @@
-var fs = require('fs');
-//creates list of our words
-var adjs = fs.readFileSync('adj.txt').toString().split("\n");
-
 //fisher–yates shuffle
-function shuffle(array) {
+module.exports = function shuffle(array) {
   var m = array.length, t, i;
 
   // While there remain elements to shuffle…
@@ -20,5 +16,3 @@ function shuffle(array) {
 
   return array;
 }
-
-var myWords = shuffle(adjs);

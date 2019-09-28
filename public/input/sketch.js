@@ -1,4 +1,6 @@
 let players = {};
+let adjectives;
+
 const ADD_PLAYER = 'add-player';
 
 function setup() {
@@ -16,5 +18,8 @@ function initSocket(socket) {
   socket.emit('init-player', { name: name });
   socket.on('update-players', (data) => {
     players = data.players;
+  });
+  socket.on('adjectives', (data) => {
+    adjectives = data.adjectives[socket.id];
   });
 }
