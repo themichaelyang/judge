@@ -1,22 +1,20 @@
-// Open and connect input socket
-let socket = io('/input');
-
-// Listen for confirmation of connection
-socket.on('connect', function() {
-  console.log("Connected");
-});
+let players = {};
+const ADD_PLAYER = 'add-player';
 
 function setup() {
-  window.prompt("name?");
+  const socket = io('/input');
+
+  // Listen for confirmation of connection
+  socket.on('connect', () => initSocket(socket));
   createCanvas(windowWidth, windowHeight);
   background(255);
 }
 
-function mouseMoved(){
-  // Send mouse position
-  socket.emit('data', { x: mouseX, y: mouseY });
-
-  // Draw ellipse @mouse position
-  fill(0);
-  ellipse(mouseX, mouseY, 10, 10);
+function initSocket(socket) {
+  const name = window.prompt("name?");
+  console.log(name);
+  socket.emit('init-player', { name: name });
+  socket.on('update-players', (data) => {
+    players = data.players;
+  });
 }
