@@ -6,7 +6,8 @@ socket.on('connect', function() {
   console.log("Connected");
 });
 
-function setup(){
+function setup() {
+  window.prompt("name?");
   createCanvas(windowWidth, windowHeight);
   background(255);
 }

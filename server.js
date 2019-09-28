@@ -13,12 +13,11 @@ app.use(express.static('public'));
 let io = require('socket.io').listen(server);
 
 // Clients in the output namespace
-var outputs = io.of('/output');
+let outputs = io.of('/output');
 // Listen for output clients to connect
-outputs.on('connection', function(socket){
+outputs.on('connection', function(socket) {
   console.log('An output client connected: ' + socket.id);
 
-  // Listen for this output client to disconnect
   socket.on('disconnect', function() {
     console.log("An output client has disconnected " + socket.id);
   });
@@ -32,16 +31,12 @@ inputs.on('connection', function(socket){
 
   // Listen for data messages from this client
   socket.on('data', function(data) {
-    // Data comes in as whatever was sent, including objects
-    //console.log("Received: 'data' " + data);
 
-    // Package up data with socket's id
     let message = {
       id: socket.id,
       data : data
     }
 
-    // Send it to all of the output clients
     outputs.emit('message', message);
   });
 
