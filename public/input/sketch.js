@@ -6,7 +6,8 @@ let rollover;
 let textX, textY, textW, textH;
 let offsetX, offsetY;
 let dragging;
-let i;
+let wordIndex = 0;
+let video;
 
 function setup() {
   const socket = io('/input');
@@ -27,9 +28,10 @@ function setup() {
   offsetX = 0;
   offsetY = 0;
   dragging = false;
-  i = 0;
   background(20);
   currentword = "";
+
+  video = initVideo(socket);
 }
 
 function initSocket(socket) {
@@ -39,14 +41,20 @@ function initSocket(socket) {
   socket.on('update-players', (data) => {
     players = data.players;
   });
+
   socket.on('adjectives', (data) => {
+    console.log(players);
     adjectives = data.adjectives[socket.id];
+  });
+
+  socket.on('from-server', (message) => {
+    console.log(message);
   });
 }
 
 function draw() {
   if(adjectives) {
-    currentword = adjectives[i];
+    currentword = adjectives[wordIndex];
     background(20);
 
     fill(255, 204, 0);
@@ -59,7 +67,7 @@ function draw() {
     if (dragging) {
       textX = mouseX + offsetX;
       textY = mouseY + offsetY;
-    }else{
+    } else {
       textX = halfWidth-50;
       textY = halfheight+50;
     }
@@ -82,25 +90,42 @@ function mousePressed() {
   if (rollover) {
     dragging = true;
   }
-  if (dragging){
+  if (dragging) {
     offsetX = textX-mouseX;
     offsetY = textY-mouseY;
   }
 }
 
 function mouseReleased() {
-  //if it was dragging
+  // if it was dragging
   if (dragging){
-    //if over yellow
+    // if over yellow
     if (mouseX > 10 && mouseX < 10 + (halfWidth-10) && mouseY > 10 && mouseY < 10 + halfheight){
-    console.log("Yellow is " + currentword);
-    i ++;
-
-    //if over green
-    }else if(mouseX > halfWidth+10 && mouseX < halfWidth+10 + halfWidth-20 && mouseY > 10 && mouseY < 10 + halfheight){
-    console.log("Green is " + currentword);
-    i ++;
+      console.log("Yellow is " + currentword);
+      wordIndex++;
+    // if over green
+    } else if(mouseX > halfWidth+10 && mouseX < halfWidth+10 + halfWidth-20 && mouseY > 10 && mouseY < 10 + halfheight){
+      console.log("Green is " + currentword);
+      wordIndex++;
     }
     dragging = false;
   }
+}
+
+async function initVideo(socket) {
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  const videoElement = document.createElement('video');
+  videoElement.srcObject = stream;
+  videoElement.play();
+
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  canvas.width = videoElement.videoWidth;
+  canvas.height = videoElement.videoHeight;
+  window.setInterval(() => {
+    console.log("SEND");
+    context.drawImage(videoElement, 0, 0, videoElement.videoWidth, videoElement.videoHeight);
+    socket.emit('to-inputs', {id: socket.id, image: canvas.toDataURL('image/jpeg') });
+  }, 1000);
+  return videoElement;
 }

@@ -23,7 +23,8 @@ function initInput(socket) {
     if (state == '1_WAITING_PLAYERS') {
       console.log(message);
       players[socket.id] = message.name;
-      socket.emit('update-players', { players: players });
+      inputs.emit('update-players', { players: players });
+      console.log(players);
 
       // start the game at 3 players
       if (Object.keys(players).length == 3) {
@@ -39,7 +40,9 @@ function initInput(socket) {
   socket.on('disconnect', () => removePlayer(socket));
 
   socket.on('to-inputs', (message) => {
-    socket.to('/input').emit('from-server', message);
+    console.log("TO INPUTS");
+    // socket.to('/input').emit('from-server', message);
+    socket.broadcast.emit('from-server', message);
   });
   socket.on('to-everyone', (message) => {
     socket.broadcast.emit('from-server', message);
