@@ -15,6 +15,7 @@ server.listen(port, () => {
 });
 
 const inputs = io.of('/input');
+const outputs = io.of('/output');
 inputs.on('connection', initInput);
 
 function initInput(socket) {
@@ -38,6 +39,12 @@ function initInput(socket) {
   });
 
   socket.on('disconnect', () => removePlayer(socket));
+
+  socket.on('sentence', (message) => {
+    console.log("SENTENCE");
+    console.log(message);
+    outputs.emit('sentence', message);
+  });
 
   socket.on('to-inputs', (message) => {
     console.log("TO INPUTS");

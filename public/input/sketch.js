@@ -13,9 +13,10 @@ let playerLeft;
 let playerRight;
 
 let name;
+let socket;
 
 function setup() {
-  const socket = io('/input');
+  socket = io('/input');
 
   // Listen for confirmation of connection
   socket.on('connect', () => initSocket(socket));
@@ -114,15 +115,13 @@ function mouseReleased() {
   if (dragging) {
     // if over yellow
     if (mouseX > 10 && mouseX < 10 + (halfWidth-10) && mouseY > 10 && mouseY < 10 + halfheight){
-      console.log(playerLeft);
-      console.log(players[playerLeft]);
-      console.log("Yellow is " + currentword);
+      console.log(players[playerLeft] + " is " + currentword);
+      socket.emit("sentence", {sentence: players[playerLeft] + " is " + currentword })
       wordIndex++;
     // if over green
     } else if(mouseX > halfWidth+10 && mouseX < halfWidth+10 + halfWidth-20 && mouseY > 10 && mouseY < 10 + halfheight){
-      console.log(playerRight);
-      console.log(players[playerRight]);
-      console.log("Green is " + currentword);
+      console.log(players[playerRight] + "is " + currentword);
+      socket.emit("sentence", {sentence: players[playerRight] + " is " + currentword })
       wordIndex++;
     }
     dragging = false;
