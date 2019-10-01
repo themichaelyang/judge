@@ -9,6 +9,11 @@ let dragging;
 let wordIndex = 0;
 let video;
 
+let playerLeft;
+let playerRight;
+
+let name;
+
 function setup() {
   const socket = io('/input');
 
@@ -30,12 +35,11 @@ function setup() {
   dragging = false;
   background(20);
   currentword = "";
-
-  video = initVideo(socket);
+  // video = initVideo(socket);
 }
 
 function initSocket(socket) {
-  const name = window.prompt("name?");
+  name = window.prompt("name?");
   console.log(name);
   socket.emit('init-player', { name: name });
   socket.on('update-players', (data) => {
@@ -43,8 +47,17 @@ function initSocket(socket) {
   });
 
   socket.on('adjectives', (data) => {
-    console.log(players);
     adjectives = data.adjectives[socket.id];
+    const keys = Object.keys(players);
+    let notMe = [];
+    for (let i = 0; i < keys.length; i++) {
+      if (name != keys[i]) {
+        notMe.push(keys[i]);
+      }
+    }
+
+    playerLeft = notMe[0];
+    playerRight = notMe[1];
   });
 
   socket.on('from-server', (message) => {
@@ -98,13 +111,17 @@ function mousePressed() {
 
 function mouseReleased() {
   // if it was dragging
-  if (dragging){
+  if (dragging) {
     // if over yellow
     if (mouseX > 10 && mouseX < 10 + (halfWidth-10) && mouseY > 10 && mouseY < 10 + halfheight){
+      console.log(playerLeft);
+      console.log(players[playerLeft]);
       console.log("Yellow is " + currentword);
       wordIndex++;
     // if over green
     } else if(mouseX > halfWidth+10 && mouseX < halfWidth+10 + halfWidth-20 && mouseY > 10 && mouseY < 10 + halfheight){
+      console.log(playerRight);
+      console.log(players[playerRight]);
       console.log("Green is " + currentword);
       wordIndex++;
     }
@@ -114,17 +131,21 @@ function mouseReleased() {
 
 async function initVideo(socket) {
   const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  console.log(stream);
   const videoElement = document.createElement('video');
   videoElement.srcObject = stream;
   videoElement.play();
+  document.body.appendChild(videoElement);
 
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
   canvas.width = videoElement.videoWidth;
   canvas.height = videoElement.videoHeight;
+  console.log(videoElement.videoWidth);
   window.setInterval(() => {
     console.log("SEND");
     context.drawImage(videoElement, 0, 0, videoElement.videoWidth, videoElement.videoHeight);
+    console.log(canvas);
     socket.emit('to-inputs', {id: socket.id, image: canvas.toDataURL('image/jpeg') });
   }, 1000);
   return videoElement;
