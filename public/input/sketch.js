@@ -52,7 +52,7 @@ function initSocket(socket) {
     const keys = Object.keys(players);
     let notMe = [];
     for (let i = 0; i < keys.length; i++) {
-      if (name != keys[i]) {
+      if (socket.id != keys[i]) {
         notMe.push(keys[i]);
       }
     }
@@ -76,7 +76,9 @@ function draw() {
     fill(105, 186, 73);
     rect(halfWidth+10, 10, halfWidth-20, halfheight);
 
-    fill(200, 200, 200);
+    fill(0,0,0);
+    text(players[playerLeft], 60, 20);
+    text(players[playerRight], halfWidth + 60, 20);
 
     if (dragging) {
       textX = mouseX + offsetX;
@@ -86,6 +88,7 @@ function draw() {
       textY = halfheight+50;
     }
 
+    fill(200, 200, 200);
     rect(textX, textY, textW, textH);
 
     fill(20,20,20);
